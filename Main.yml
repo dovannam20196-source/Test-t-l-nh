@@ -1,0 +1,35 @@
+name: Build ESP32-S3
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          pip install -U platformio
+          mkdir -p src
+          printf "[env:esp32s3]\nplatform = espressif32\nboard = esp32-s3-devkitc-1\nframework = arduino\n" > platformio.ini
+          cat << 'EOF' > src/main.cpp
+          #include <Arduino.h>
+          void setup() {
+            pinMode(14, OUTPUT);
+            pinMode(15, OUTPUT);
+            pinMode(39, OUTPUT);
+            pinMode(42, OUTPUT);
+          }
+          void loop() {
+            digitalWrite(14, HIGH); delay(3000); digitalWrite(14, LOW); delay(1000);
+            digitalWrite(15, HIGH); delay(3000); digitalWrite(15, LOW); delay(1000);
+            digitalWrite(39, HIGH); delay(5000); digitalWrite(39, LOW); delay(1000);
+            digitalWrite(42, HIGH); delay(3000); digitalWrite(42, LOW); delay(2000);
+          }
+          EOF
+          pio run
+          python3 -m esptool --chip esp32s3 merge_bin -o firmware_merged.bin --flash_mode dio --flash_size 4MB 0x0 .pio/build/esp32s3/bootloader.bin 0x8000 .pio/build/esp32s3/partitions.bin 0x10000 .pio/build/esp32s3/firmware.bin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp32s3
+          path: firmware_merged.bin
+          
