@@ -1,0 +1,16 @@
+name: Build ESP32-S3
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - run: |
+          arduino-cli core update-index --additional-urls https://githubusercontent.com
+          arduino-cli core install esp32:esp32 --additional-urls https://githubusercontent.com
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 --output-dir build test/test.ino
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp32s3
+          path: build/*.bin
