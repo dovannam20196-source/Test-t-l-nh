@@ -14,10 +14,10 @@ jobs:
           arduino-cli config add board_manager.additional_urls "${URL1}${URL2}"
           arduino-cli core update-index
           arduino-cli core install esp32:esp32@2.0.17
-          INO_PATH=$(find . -name "*.ino" | head -n 1)
-          arduino-cli compile --fqbn esp32:esp32:esp32s3 --export-binaries "$INO_PATH"
+          mkdir -p sketch_esp32
+          find . -maxdepth 3 -name "*.ino" -exec cp {} sketch_esp32/sketch_esp32.ino \;
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 --export-binaries sketch_esp32/sketch_esp32.ino
       - uses: actions/upload-artifact@v4
         with:
           name: firmware-esp32s3
-          path: "**/*.bin"
-          
+          path: "sketch_esp32/build/**/*.bin"
