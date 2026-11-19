@@ -2,16 +2,22 @@ name: Build ESP32-S3
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: arduino/setup-arduino-cli@v2
-      - run: |
-          arduino-cli core update-index --additional-urls https://githubusercontent.com
-          arduino-cli core install esp32:esp32 --additional-urls https://githubusercontent.com
-          arduino-cli compile --fqbn esp32:esp32:esp32s3 --merge-bin --output-dir build test/test.ino
+      - name: Cai dat cong cu
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3-serial
+          curl -fsSL https://githubusercontent.com | sh
+          sudo mv bin/arduino-cli /usr/local/bin/
+      - name: Bien dich ESP32-S3
+        run: |
+          arduino-cli core update-index --additional-urls https://github.io
+          arduino-cli core install esp32:esp32@2.0.17 --additional-urls https://github.io
+          INO_PATH=$(find . -name "*.ino" | head -n 1)
+          arduino-cli compile --fqbn esp32:esp32:esp32s3 --export-binaries "$INO_PATH"
       - uses: actions/upload-artifact@v4
         with:
           name: firmware-esp32s3
-          path: build/*.merged.bin
+          path: "**/*.bin"
           
