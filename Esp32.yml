@@ -5,15 +5,15 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Cai dat cong cu
-        run: |
+      - uses: arduino/setup-arduino-cli@v2
+      - run: |
           sudo apt-get update && sudo apt-get install -y python3-serial
-          curl -fsSL https://githubusercontent.com | sh
-          sudo mv bin/arduino-cli /usr/local/bin/
-      - name: Bien dich ESP32-S3
-        run: |
-          arduino-cli core update-index --additional-urls https://github.io
-          arduino-cli core install esp32:esp32@2.0.17 --additional-urls https://github.io
+          URL1="https://espressif.github.io"
+          URL2="/arduino-esp32/package_esp32_index.json"
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls "${URL1}${URL2}"
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32@2.0.17
           INO_PATH=$(find . -name "*.ino" | head -n 1)
           arduino-cli compile --fqbn esp32:esp32:esp32s3 --export-binaries "$INO_PATH"
       - uses: actions/upload-artifact@v4
